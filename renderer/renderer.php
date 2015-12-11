@@ -164,12 +164,12 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
                 // TOC After the content
                 if ($this->info['toc'] == true and $section['level'] == 1 and $section['position'] == 1) {
 
-                    // Needed to render the doc created during the
-                    // renderer process
-                    // Otherwise it uses the metadata cache ...
-                    global $TOC;
-                    $TOC = $this->toc;
-                    $this->doc .= tpl_toc($return = true);
+                    global $conf;
+                    if (count($this->toc) > $conf['tocminheads']){
+                        global $TOC;
+                        $TOC = $this->toc;
+                        $this->doc .= tpl_toc($return = true);
+                    }
 
 
                 }
