@@ -23,11 +23,16 @@ require_once DOKU_INC . 'inc/parser/xhtml.php';
 class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
 {
 
+    /**
+     * @var array that hold the position of the parent
+     */
+    protected $nodeParentPosition = [];
 
-    /** @var array that hold the current position of an header for a level
+    /**
+     * @var array that hold the current position of an header for a level
      * $headerNum[level]=position
-     * */
-    protected $headerPos = [];
+     */
+    protected $header = [];
 
     /**
      * @var array that will contains the whole doc but by section
@@ -44,15 +49,17 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
      */
     protected $previousSectionTextHeader = '';
 
-    /**
-     * @var variable that permits to carry the level of a previous section
-     */
-    protected $previousLevel = 0;
 
     /**
      * @var variable that permits to carry the position of a previous section
      */
-    protected $previousPosition = 0;
+    protected $previousNodePosition = 0;
+
+    /**
+     * @var variable that permits to carry the position of a previous section
+     */
+    protected $previousNodeLevel = 0;
+
 
     function getFormat()
     {
@@ -79,35 +86,54 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
      */
     function header($text, $level, $pos)
     {
-        global $conf;
 
-        // Keeping the position of each header for its level
-        if (array_key_exists($level, $this->headerPos)) {
-            $position = $this->headerPos[$level] + 1;
+
+        // We are going from 2 to 3
+        // The parent is 2
+        if ($level > $this->previousNodeLevel) {
+            $nodePosition = 1;
+            // Keep the position of the parent
+            $this->nodeParentPosition[$this->previousNodeLevel] = $this->previousNodePosition;
+        } elseif
+            // We are going from 3 to 2
+            // The parent is 1
+        ($level < $this->previousNodeLevel
+        ) {
+            $nodePosition = $this->nodeParentPosition[$level] + 1;
         } else {
-            $position = 1;
+            $nodePosition = $this->previousNodePosition + 1;
         }
-        $this->headerPos[$level] = $position;
 
         // Pump the doc from the previous section
-        $this->sections[$this->sectionNumber] = array('level' => $this->previousLevel, 'position' => $this->previousPosition, 'content' => $this->doc, 'text' => $this->previousSectionTextHeader);
+        $this->sections[$this->sectionNumber] = array(
+            'level' => $this->previousNodeLevel,
+            'position' => $this->previousNodePosition,
+            'content' => $this->doc,
+            'text' => $this->previousSectionTextHeader);
+
         // And reset it
         $this->doc = '';
         // Set the looping variable
         $this->sectionNumber = $this->sectionNumber + 1;
-        $this->previousLevel = $level;
-        $this->previousPosition = $position;
+        $this->previousNodeLevel = $level;
+        $this->previousNodePosition = $nodePosition;
         $this->previousSectionTextHeader = $text;
 
         $numbering = "";
         if ($level == 2) {
-            $numbering = $position;
+            $numbering = $nodePosition;
         }
-        if ($level >= 3) {
-            $numbering = $level.".".$position;
+        if ($level == 3) {
+            $numbering = $this->nodeParentPosition[$level-1] . "." . $nodePosition;
+        }
+        if ($level == 4) {
+            $numbering = $this->nodeParentPosition[$level-2] . "." .$this->nodeParentPosition[$level-1] . "." .$nodePosition;
+        }
+        if ($level == 5) {
+            $numbering = $this->nodeParentPosition[$level-3] . "." . $this->nodeParentPosition[$level-2] . "." .$this->nodeParentPosition[$level-1] . "." .$nodePosition;
         }
         if ($numbering <> "") {
-            $textWithLocalization = $numbering." - ". $text;
+            $textWithLocalization = $numbering . " - " . $text;
         } else {
             $textWithLocalization = $text;
         }
@@ -120,23 +146,19 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
     function document_end()
     {
 
-        global $ID;
-
         // Pump the last doc
-        $this->sections[$this->sectionNumber] = array('level' => $this->previousLevel, 'position' => $this->previousPosition, 'content' => $this->doc, 'text' => $this->previousSectionTextHeader);
+        $this->sections[$this->sectionNumber] = array('level' => $this->previousNodeLevel, 'position' => $this->previousNodePosition, 'content' => $this->doc, 'text' => $this->previousSectionTextHeader);
 
         // Recreate the doc
         $this->doc = '';
         foreach ($this->sections as $sectionNumber => $section) {
-
-
 
             // The content
             $this->doc .= $section['content'];
 
             // No TOC or bar for an admin page
             global $ACT;
-            if ($ACT <> 'admin' ) {
+            if ($ACT <> 'admin' and $ACT <> 'search') {
 
 
                 // TOC After the content
@@ -168,7 +190,6 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
 //                }
 
             }
-
 
 
         }

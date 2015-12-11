@@ -1,7 +1,7 @@
 base   rplus
 author Nicolas GERARD
 email  gerardnico@gmail.com
-date   2015-04-02
+date   2015-12-11
 name   Renderer Plus
 desc   Rendering adding a numbering to the header and the TOC after the title
 url    https://www.dokuwiki.org/plugin:renderplus
