@@ -198,5 +198,27 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
 
     }
 
+    /**
+     * Start a table
+     *
+     * @param int $maxcols maximum number of columns
+     * @param int $numrows NOT IMPLEMENTED
+     * @param int $pos     byte position in the original source
+     */
+    function table_open($maxcols = null, $numrows = null, $pos = null) {
+        // initialize the row counter used for classes
+        $this->_counter['row_counter'] = 0;
+        $class                         = 'table';
+        if($pos !== null) {
+            $class .= ' '.$this->startSectionEdit($pos, 'table');
+        }
+        // table-responsive and
+        $bootResponsiveClass = 'table-responsive';
+        $bootTableClass = 'table table-hover table-striped';
+
+        $this->doc .= '<div class="'.$class.' '.$bootResponsiveClass.'"><table class="inline '.$bootTableClass.'">'.
+            DOKU_LF;
+    }
+
 
 }
