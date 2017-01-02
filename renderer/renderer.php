@@ -80,6 +80,12 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
     /**
      * Render a heading
      *
+     * The rendering of the heading is done through the parent
+     * The function just:
+     *   - save the rendering between each header in the class variable $this->sections
+     * This variblae is used in the function document_end to recreate the whole doc.
+     *   - add the numbering to the header text
+     *
      * @param string $text the text to display
      * @param int $level header level
      * @param int $pos byte position in the original source
@@ -104,7 +110,7 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
             $nodePosition = $this->previousNodePosition + 1;
         }
 
-        // Pump the doc from the previous section
+        // Grab the doc from the previous section
         $this->sections[$this->sectionNumber] = array(
             'level' => $this->previousNodeLevel,
             'position' => $this->previousNodePosition,
@@ -124,20 +130,31 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
             $numbering = $nodePosition;
         }
         if ($level == 3) {
-            $numbering = $this->nodeParentPosition[$level-1] . "." . $nodePosition;
+            $numbering = $this->nodeParentPosition[$level - 1] . "." . $nodePosition;
         }
         if ($level == 4) {
-            $numbering = $this->nodeParentPosition[$level-2] . "." .$this->nodeParentPosition[$level-1] . "." .$nodePosition;
+            $numbering = $this->nodeParentPosition[$level - 2] . "." . $this->nodeParentPosition[$level - 1] . "." . $nodePosition;
         }
         if ($level == 5) {
-            $numbering = $this->nodeParentPosition[$level-3] . "." . $this->nodeParentPosition[$level-2] . "." .$this->nodeParentPosition[$level-1] . "." .$nodePosition;
+            $numbering = $this->nodeParentPosition[$level - 3] . "." . $this->nodeParentPosition[$level - 2] . "." . $this->nodeParentPosition[$level - 1] . "." . $nodePosition;
         }
         if ($numbering <> "") {
             $textWithLocalization = $numbering . " - " . $text;
         } else {
             $textWithLocalization = $text;
         }
+
+        // Rendering is done by the parent
         parent::header($textWithLocalization, $level, $pos);
+
+        // Add the page detail after the first header
+        if ($level == 1 and $nodePosition == 1) {
+
+            $this->doc .= '<a class="btn btn-info btn-xs" role="link">Category 1</a>' ;
+            $this->doc .= ' > <a class="btn btn-info btn-xs" role="link">Category 2</a><br />';
+
+        }
+
 
 
     }
@@ -156,38 +173,34 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
             // The content
             $this->doc .= $section['content'];
 
-            // No TOC or bar for an admin page
-            global $ACT;
-            if ($ACT <> 'admin' and $ACT <> 'search') {
+            if ($section['level'] == 1 and $section['position'] == 1) {
 
-
-                // TOC After the content
-                if ($this->info['toc'] == true and $section['level'] == 1 and $section['position'] == 1) {
+                // No TOC or bar for an admin page
+                global $ACT;
+                if ($ACT <> 'admin' and $ACT <> 'search' and $this->info['toc'] == true) {
 
                     global $conf;
-                    if (count($this->toc) > $conf['tocminheads']){
+                    if (count($this->toc) > $conf['tocminheads']) {
                         global $TOC;
                         $TOC = $this->toc;
                         $this->doc .= tpl_toc($return = true);
                     }
 
-
                 }
 
-                // Adbar after the content
-                // Adbar later
-//                if ($section['level'] == 2 and
-//                    $section['position'] == 1 and
-//                    $ID <> 'adbar12' and
-//                    $ID <> 'start'
-//                ) {
-//
-//                    // $ID <> 'adbar12' to not come in a recursive call
-//                    // as tpl_include_call also the renderer process
-//
-//                    $this->doc .= tpl_include_page('adbar12', $print = false, $propagate = true);
-//
-//                }
+                // Advertisement bar after the content ???
+                //                if ($section['level'] == 2 and
+                //                    $section['position'] == 1 and
+                //                    $ID <> 'adbar12' and
+                //                    $ID <> 'start'
+                //                ) {
+                //
+                //                    // $ID <> 'adbar12' to not come in a recursive call
+                //                    // as tpl_include_call also the renderer process
+                //
+                //                    $this->doc .= tpl_include_page('adbar12', $print = false, $propagate = true);
+                //
+                //                }
 
             }
 
@@ -203,21 +216,22 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
      *
      * @param int $maxcols maximum number of columns
      * @param int $numrows NOT IMPLEMENTED
-     * @param int $pos     byte position in the original source
+     * @param int $pos byte position in the original source
      */
-    function table_open($maxcols = null, $numrows = null, $pos = null) {
+    function table_open($maxcols = null, $numrows = null, $pos = null)
+    {
         // initialize the row counter used for classes
         $this->_counter['row_counter'] = 0;
-        $class                         = 'table';
-        if($pos !== null) {
-            $class .= ' '.$this->startSectionEdit($pos, 'table');
+        $class = 'table';
+        if ($pos !== null) {
+            $class .= ' ' . $this->startSectionEdit($pos, 'table');
         }
         // table-responsive and
         $bootResponsiveClass = 'table-responsive';
         $bootTableClass = 'table table-hover table-striped';
 
-        $this->doc .= '<div class="'.$class.' '.$bootResponsiveClass.'"><table class="inline '.$bootTableClass.'">'.
-            DOKU_LF;
+        $this->doc .= '<div class="' . $class . ' ' . $bootResponsiveClass . '"><table class="inline ' . $bootTableClass . '">' . DOKU_LF;
+
     }
 
 
