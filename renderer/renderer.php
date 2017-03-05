@@ -150,8 +150,8 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
         // Add the page detail after the first header
         if ($level == 1 and $nodePosition == 1) {
 
-            $this->doc .= '<a class="btn btn-info btn-xs" role="link">Category 1</a>' ;
-            $this->doc .= ' > <a class="btn btn-info btn-xs" role="link">Category 2</a><br />';
+            global $ID;
+            $this->doc .= tpl_youarehere_bootstrap($ID);
 
         }
 
