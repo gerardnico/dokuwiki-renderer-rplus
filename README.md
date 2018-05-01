@@ -30,3 +30,5 @@ In your template in order to get only one TOC, you need to call the function tpl
 
 See the function definition: [tpl_content](http://xref.dokuwiki.org/reference/dokuwiki/nav.html?_functions/tpl_content.html)
 
+## Release
+  * 2018-05-01: [Refactored section edit Bug]()https://github.com/splitbrain/dokuwiki/pull/2220)
