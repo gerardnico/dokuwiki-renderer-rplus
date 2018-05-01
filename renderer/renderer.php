@@ -224,7 +224,12 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
         $this->_counter['row_counter'] = 0;
         $class = 'table';
         if ($pos !== null) {
-            $class .= ' ' . $this->startSectionEdit($pos, 'table');
+            $sectionEditStartData = ['target' => 'table'];
+            if (!defined('SEC_EDIT_PATTERN')) {
+                // backwards-compatibility for Frusterick Manners (2017-02-19)
+                $sectionEditStartData = 'table';
+            }
+            $class .= ' ' . $this->startSectionEdit($pos, $sectionEditStartData);
         }
         // table-responsive and
         $bootResponsiveClass = 'table-responsive';
