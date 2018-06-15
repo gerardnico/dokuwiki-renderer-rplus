@@ -151,10 +151,9 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
         if ($level == 1 and $nodePosition == 1) {
 
             global $ID;
-            $this->doc .= tpl_youarehere_bootstrap($ID);
+            $this->doc .= $this->youarehere($ID);
 
         }
-
 
 
     }
@@ -217,8 +216,9 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
      * @param int $maxcols maximum number of columns
      * @param int $numrows NOT IMPLEMENTED
      * @param int $pos byte position in the original source
+     * @param string|string[]  classes - have to be valid, do not pass unfiltered user input
      */
-    function table_open($maxcols = null, $numrows = null, $pos = null)
+    function table_open($maxcols = null, $numrows = null, $pos = null, $classes = NULL)
     {
         // initialize the row counter used for classes
         $this->_counter['row_counter'] = 0;
@@ -236,6 +236,81 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
         $bootTableClass = 'table table-hover table-striped';
 
         $this->doc .= '<div class="' . $class . ' ' . $bootResponsiveClass . '"><table class="inline ' . $bootTableClass . '">' . DOKU_LF;
+
+    }
+
+
+    /**
+     * Hierarchical breadcrumbs
+     *
+     * This will return the Hierarchical breadcrumbs.
+     *
+     * Config:
+     *    - $conf['youarehere'] must be true
+     *    - add $lang['youarehere'] if $printPrefix is true
+     *
+     * @return string
+     */
+    function youarehere()
+    {
+
+        global $conf;
+        global $lang;
+
+        // check if enabled
+        if (!$conf['youarehere']) return;
+
+        // print intermediate namespace links
+        $htmlOutput = '<ol class="breadcrumb rplus">' . PHP_EOL;
+
+        // Print the home page
+        $htmlOutput .= '<li>' . PHP_EOL;
+        $page = $conf['start'];
+        $pageTitle = tpl_pagetitle($page, true);
+        $htmlOutput .= tpl_link(wl($page), '<span class="nicon_home" aria-hidden="true"></span>', 'title="' . $pageTitle . '"', $return = true);
+        $htmlOutput .= '</li>' . PHP_EOL;
+
+        // Print the parts if there is more than one
+        global $ID;
+        $idParts = explode(':', $ID);
+        $countPart = count($idParts);
+        if ($countPart > 1) {
+
+            // Print the parts without the last one ($count -1)
+            $pagePart = "";
+            for ($i = 0; $i < $countPart - 1; $i++) {
+
+                $pagePart .= $idParts[$i] . ':';
+
+                // We pass the value to the page variable
+                // because the resolve part will change it
+                $page = $pagePart;
+                $exist = null;
+                resolve_pageid(getNS($ID), $page, $exist, "", true);
+
+                $pageTitle = tpl_pagetitle($page, true);
+                $linkContent = $pageTitle;
+                if ($i<$countPart - 1){
+                    $linkContent = " > ".$linkContent;
+                }
+                $htmlOutput .= '<li>';
+                // html_wikilink because the page has the form pagename: and not pagename:pagename
+                $htmlOutput .= tpl_link(wl($page), $linkContent, 'title="' . $pageTitle . '" class="navlink"', $return = true);
+                $htmlOutput .= '</li>' . PHP_EOL;
+
+            }
+        }
+
+
+
+        // print current page
+        //    print '<li>';
+        //    tpl_link(wl($page), tpl_pagetitle($page,true), 'title="' . $page . '"');
+        $htmlOutput .= '</li>' . PHP_EOL;
+
+        // close the breadcrumb
+        $htmlOutput .= '</ol>' . PHP_EOL;
+        return $htmlOutput;
 
     }
 
