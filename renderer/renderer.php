@@ -162,6 +162,15 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
     function document_end()
     {
 
+        // TOC init
+        // Dow we need to show the toc ?
+        $showToc = $this->getShowToc();
+        global $TOC;
+        // If the TOC is null (The toc may be initialized by a plugin)
+        if (!is_array($TOC)) {
+            $TOC = $this->toc;
+        }
+
         // Pump the last doc
         $this->sections[$this->sectionNumber] = array('level' => $this->previousNodeLevel, 'position' => $this->previousNodePosition, 'content' => $this->doc, 'text' => $this->previousSectionTextHeader);
 
@@ -174,17 +183,19 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
 
             if ($section['level'] == 1 and $section['position'] == 1) {
 
-                // No TOC or bar for an admin page
-                global $ACT;
-                if ($ACT <> 'admin' and $ACT <> 'search' and $this->info['toc'] == true) {
-
-                    global $conf;
-                    if (count($this->toc) > $conf['tocminheads']) {
-                        global $TOC;
-                        $TOC = $this->toc;
-                        $this->doc .= tpl_toc($return = true);
+                if ($showToc) {
+                    global $ACT;
+                    switch ($ACT){
+                        case 'admin':
+                            $this->doc .= tpl_toc($return = true);
+                            break;
+                        default:
+                            global $conf;
+                            if (count($TOC) > $conf['tocminheads']) {
+                                $this->doc .= tpl_toc($return = true);
+                            }
+                            break;
                     }
-
                 }
 
                 // Advertisement bar after the content ???
@@ -290,8 +301,8 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
 
                 $pageTitle = tpl_pagetitle($page, true);
                 $linkContent = $pageTitle;
-                if ($i<$countPart - 1){
-                    $linkContent = " > ".$linkContent;
+                if ($i < $countPart - 1) {
+                    $linkContent = " > " . $linkContent;
                 }
                 $htmlOutput .= '<li>';
                 // html_wikilink because the page has the form pagename: and not pagename:pagename
@@ -302,7 +313,6 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
         }
 
 
-
         // print current page
         //    print '<li>';
         //    tpl_link(wl($page), tpl_pagetitle($page,true), 'title="' . $page . '"');
@@ -311,6 +321,61 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
         // close the breadcrumb
         $htmlOutput .= '</ol>' . PHP_EOL;
         return $htmlOutput;
+
+    }
+
+    /**
+     * @return bool if the toc need to be shown
+     */
+    private function getShowToc()
+    {
+        // No TOC or bar for an admin page
+        global $ACT;
+        $showToc = null;
+
+        if ($ACT == 'search') {
+
+            $showToc = false;
+
+        }
+
+        if ($ACT == 'admin' and $showToc == null) {
+
+            global $INPUT;
+            $plugin = null;
+            $class = $INPUT->str('page');
+            if (!empty($class)) {
+
+                $pluginlist = plugin_list('admin');
+
+                if (in_array($class, $pluginlist)) {
+                    // attempt to load the plugin
+                    /** @var $plugin DokuWiki_Admin_Plugin */
+                    $plugin = plugin_load('admin', $class);
+                }
+
+                if ($plugin !== null) {
+                    global $TOC;
+                    if (!is_array($TOC)) $TOC = $plugin->getTOC(); //if TOC wasn't requested yet
+                    if (!is_array($TOC)) {
+                        $showToc = false;
+                    } else {
+                        $showToc = true;
+                    }
+
+                }
+
+            }
+
+        }
+
+        // Default True
+        if ($showToc == null) {
+            $showToc = true;
+        }
+
+
+        return $showToc;
 
     }
 
