@@ -31,4 +31,8 @@ In your template in order to get only one TOC, you need to call the function tpl
 See the function definition: [tpl_content](http://xref.dokuwiki.org/reference/dokuwiki/nav.html?_functions/tpl_content.html)
 
 ## Release
-  * 2018-05-01: [Refactored section edit Bug]()https://github.com/splitbrain/dokuwiki/pull/2220)
+### 2018-07-22
+  * TOC are now managed in the admin section because TOC may be added to show content in a admin plugin (Warf ...) Example with the SQLLite plugin.
+  * Improvement of the you-are-here (with an house icon)
+### 2018-05-01
+  * [Refactored section edit Bug]()https://github.com/splitbrain/dokuwiki/pull/2220)
