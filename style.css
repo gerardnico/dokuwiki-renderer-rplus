@@ -16,7 +16,7 @@
 }
 
 
-ol.breadcrumb.rplus li a.navlink {
+span.breadcrumb.rplus li a.navlink {
     vertical-align: middle;
     height: 1.5em;
     display: table-cell;

@@ -59,6 +59,11 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
      * @var variable that permits to carry the position of a previous section
      */
     protected $previousNodeLevel = 0;
+    
+    /**
+     * @var variable that permits to carry the number of words
+     */
+    protected $lineCounter = 0;
 
 
     function getFormat()
@@ -146,6 +151,7 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
 
         // Rendering is done by the parent
         parent::header($textWithLocalization, $level, $pos);
+		
 
         // Add the page detail after the first header
         if ($level == 1 and $nodePosition == 1) {
@@ -161,6 +167,19 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
 
     function document_end()
     {
+        
+        global $INFO;
+        $isSidebar = FALSE;
+        if ($INFO != null) {
+            global $ID;
+            $id = $INFO['id'];
+            if ($ID != $id){
+                $isSidebar = TRUE;
+            }
+        }
+        
+                    
+        
 
         // TOC init
         // Dow we need to show the toc ?
@@ -176,42 +195,62 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
 
         // Recreate the doc
         $this->doc = '';
+        $localCount = 0;
+        $rollingLineCount = 0;
+        $lineCounter = 0;
+        $adsCounter = 0;
         foreach ($this->sections as $sectionNumber => $section) {
-
-            // The content
-            $this->doc .= $section['content'];
-
+            
+            $sectionContent = $section['content'];
+            
+			
             if ($section['level'] == 1 and $section['position'] == 1) {
 
                 if ($showToc) {
+                    $toc = tpl_toc($return = true);
                     global $ACT;
                     switch ($ACT){
                         case 'admin':
-                            $this->doc .= tpl_toc($return = true);
+                            $sectionContent .= $toc;
                             break;
                         default:
                             global $conf;
                             if (count($TOC) > $conf['tocminheads']) {
-                                $this->doc .= tpl_toc($return = true);
+                                $sectionContent .= $toc;
                             }
                             break;
                     }
                 }
 
-                // Advertisement bar after the content ???
-                //                if ($section['level'] == 2 and
-                //                    $section['position'] == 1 and
-                //                    $ID <> 'adbar12' and
-                //                    $ID <> 'start'
-                //                ) {
-                //
-                //                    // $ID <> 'adbar12' to not come in a recursive call
-                //                    // as tpl_include_call also the renderer process
-                //
-                //                    $this->doc .= tpl_include_page('adbar12', $print = false, $propagate = true);
-                //
-                //                }
-
+            }
+            
+            # Split by element line
+            # element p, h, br, tr, li, pre (one line for pre)
+            $localCount = count(preg_split("/<\/p>|<\/h[1-9]{1}>|<br|<\/tr>|<\/li>|<\/pre>/",$sectionContent)) - 1;
+            $lineCounter += $localCount;
+            $rollingLineCount += $localCount;
+            
+            // The content
+            if ($this->getConf('TestMode') == 1 && $isSidebar == FALSE ){
+                $this->doc .= "<p>Section ".$sectionNumber.": (".$localCount."|".$lineCounter."|".$rollingLineCount.")</p>";
+            }
+            $this->doc .= $sectionContent;
+            
+            // Every 13 line, not the sidebar, not after the toc
+            if ($lineCounter > $this->getConf('AdsLineBetween') && $isSidebar == FALSE && $sectionNumber > $this->getConf('AdsMinSectionNumber')) {
+                
+                // Counter
+                $adsCounter += 1;
+                $lineCounter = 0;
+                
+                if ($this->getConf('TestMode') == 1 ){
+                    $this->doc .= '<div align="center" style="border:1px solid;padding:30px;height:90px">Placeholder'.$adsCounter.'</div>';
+                } else {
+                    if ( $adsCounter <= 3){
+                        $this->doc .= $this->getConf('Ads'.$adsCounter);
+                    }
+                }
+                
             }
 
 
@@ -272,14 +311,14 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
         if (!$conf['youarehere']) return;
 
         // print intermediate namespace links
-        $htmlOutput = '<ol class="breadcrumb rplus">' . PHP_EOL;
+        $htmlOutput = '<p class="branch rplus">' . PHP_EOL;
 
         // Print the home page
-        $htmlOutput .= '<li>' . PHP_EOL;
+        $htmlOutput .= '<span>' . PHP_EOL;
         $page = $conf['start'];
         $pageTitle = tpl_pagetitle($page, true);
         $htmlOutput .= tpl_link(wl($page), '<span class="nicon_home" aria-hidden="true"></span>', 'title="' . $pageTitle . '"', $return = true);
-        $htmlOutput .= '</li>' . PHP_EOL;
+        $htmlOutput .= '</span>' . PHP_EOL;
 
         // Print the parts if there is more than one
         global $ID;
@@ -304,10 +343,10 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
                 if ($i < $countPart - 1) {
                     $linkContent = " > " . $linkContent;
                 }
-                $htmlOutput .= '<li>';
+                $htmlOutput .= '<span>';
                 // html_wikilink because the page has the form pagename: and not pagename:pagename
                 $htmlOutput .= tpl_link(wl($page), $linkContent, 'title="' . $pageTitle . '" class="navlink"', $return = true);
-                $htmlOutput .= '</li>' . PHP_EOL;
+                $htmlOutput .= '</span>' . PHP_EOL;
 
             }
         }
@@ -316,10 +355,10 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
         // print current page
         //    print '<li>';
         //    tpl_link(wl($page), tpl_pagetitle($page,true), 'title="' . $page . '"');
-        $htmlOutput .= '</li>' . PHP_EOL;
+        //$htmlOutput .= '</li>' . PHP_EOL;
 
         // close the breadcrumb
-        $htmlOutput .= '</ol>' . PHP_EOL;
+        $htmlOutput .= '</p>' . PHP_EOL;
         return $htmlOutput;
 
     }
