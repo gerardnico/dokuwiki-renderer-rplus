@@ -237,7 +237,7 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
             $this->doc .= $sectionContent;
             
             // Every 13 line, not the sidebar, not after the toc
-            if ($lineCounter > $this->getConf('AdsLineBetween') && $isSidebar == FALSE && $sectionNumber > $this->getConf('AdsMinSectionNumber')) {
+            if ($lineCounter > $this->getConf('AdsLineBetween') && $isSidebar == FALSE && $sectionNumber > $this->getConf('AdsMinSectionNumber') && $localCount > $this->getConf('AdsMinLocalLine') ) {
                 
                 // Counter
                 $adsCounter += 1;
