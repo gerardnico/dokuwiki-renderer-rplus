@@ -1,5 +1,7 @@
 <?php
-$meta['TestMode']            = array('onoff');
+$meta['ShowPlaceholder']     = array('onoff');
+$meta['ShowCount']           = array('onoff');
+
 $meta['AdsLineBetween']      = array('numeric');
 $meta['AdsMinSectionNumber'] = array('numeric');
 $meta['AdsMinLocalLine']     = array('numeric');

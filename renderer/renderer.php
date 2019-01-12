@@ -231,19 +231,44 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
             $rollingLineCount += $localCount;
             
             // The content
-            if ($this->getConf('TestMode') == 1 && $isSidebar == FALSE ){
+            if ($this->getConf('ShowCount') == 1 && $isSidebar == FALSE ){
                 $this->doc .= "<p>Section ".$sectionNumber.": (".$localCount."|".$lineCounter."|".$rollingLineCount.")</p>";
             }
             $this->doc .= $sectionContent;
             
-            // Every 13 line, not the sidebar, not after the toc
-            if ($lineCounter > $this->getConf('AdsLineBetween') && $isSidebar == FALSE && $sectionNumber > $this->getConf('AdsMinSectionNumber') && $localCount > $this->getConf('AdsMinLocalLine') ) {
+            
+             
+            
+            
+            if ( 
+                $isSidebar == FALSE && // No display on the sidebar
+                (
+                    (   
+                    $localCount > $this->getConf('AdsMinLocalLine') && // Doesn't show any ad if the section does not contains this minimun number of line
+                    $lineCounter > $this->getConf('AdsLineBetween') && // Every N line, 
+                    $sectionNumber > $this->getConf('AdsMinSectionNumber') // Doesn't show any ad before 
+                    )
+                    or 
+                    // Show always an ad after a number of section
+                    (
+                    $adsCounter == 0 && // Still not ads
+                    $sectionNumber > $this->getConf('AdsMinSectionNumber') // Above the mininum number of section
+                    )
+                    or
+                    // Sometimes the last section (reference) has not so much line and it avoids to show an ads at the end
+                    // even if the number of line (space) was enough
+                    (
+                    $sectionNumber == count($this->sections) - 1 && // The last section
+                    $lineCounter > $this->getConf('AdsLineBetween')  // Every N line,  
+                    )
+                )
+               ){
                 
                 // Counter
                 $adsCounter += 1;
                 $lineCounter = 0;
                 
-                if ($this->getConf('TestMode') == 1 ){
+                if ($this->getConf('ShowPlaceholder') == 1 ){
                     $this->doc .= '<div align="center" style="border:1px solid;padding:30px;height:90px">Placeholder'.$adsCounter.'</div>';
                 } else {
                     if ( $adsCounter <= 3){
