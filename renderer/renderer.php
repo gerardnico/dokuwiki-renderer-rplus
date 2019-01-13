@@ -256,7 +256,8 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
                     // Show always an ad after a number of section
                     (
                     $adsCounter == 0 && // Still not ads
-                    $sectionNumber > $this->getConf('AdsMinSectionNumber') // Above the mininum number of section
+                    $sectionNumber > $this->getConf('AdsMinSectionNumber') && // Above the mininum number of section
+                    $localCount > $this->getConf('AdsMinLocalLine') // Minimum line in the current section (to avoid a pub below a header)
                     )
                     or
                     // Sometimes the last section (reference) has not so much line and it avoids to show an ads at the end
