@@ -169,9 +169,11 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
     {
         
         global $INFO;
+        global $ID;
+        // The id of the page (not of the sidebar)
+        $id = $ID;
         $isSidebar = FALSE;
-        if ($INFO != null) {
-            global $ID;
+        if ($INFO != null) {    
             $id = $INFO['id'];
             if ($ID != $id){
                 $isSidebar = TRUE;
@@ -179,7 +181,6 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
         }
         
                     
-        
 
         // TOC init
         // Dow we need to show the toc ?
@@ -236,12 +237,15 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
             }
             $this->doc .= $sectionContent;
             
+            // No ads on private page
             
-             
             
+            global $ACT;
             
             if ( 
                 $isSidebar == FALSE && // No display on the sidebar
+                $ACT != 'admin' && // Not in the admin page
+                isHiddenPage($id) == FALSE && // No ads on hidden pages
                 (
                     (   
                     $localCount > $this->getConf('AdsMinLocalLine') && // Doesn't show any ad if the section does not contains this minimun number of line
