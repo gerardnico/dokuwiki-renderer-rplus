@@ -187,7 +187,7 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
         $showToc = $this->getShowToc();
         global $TOC;
         // If the TOC is null (The toc may be initialized by a plugin)
-        if (!is_array($TOC)) {
+        if (!is_array($TOC) or count($TOC) == 0) {
             $TOC = $this->toc;
         }
 
@@ -218,7 +218,7 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
                             global $conf;
                             if (count($TOC) > $conf['tocminheads']) {
                                 $sectionContent .= $toc;
-                            }
+                            } 
                             break;
                     }
                 }
