@@ -275,7 +275,7 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
                 if ($this->getConf('ShowPlaceholder') == 1 ){
                     $this->doc .= '<div align="center" style="border:1px solid;padding:30px;height:90px">Placeholder'.$adsCounter.'</div>';
                 } else {
-                    if ( $adsCounter <= 3){
+                    if ( $adsCounter <= 6){
                         $this->doc .= $this->getConf('Ads'.$adsCounter);
                     }
                 }
