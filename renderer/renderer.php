@@ -196,7 +196,6 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
 
         // Recreate the doc
         $this->doc = '';
-        $localCount = 0;
         $rollingLineCount = 0;
         $lineCounter = 0;
         $adsCounter = 0;

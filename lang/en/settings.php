@@ -16,5 +16,8 @@ $lang['AdsMinLocalLine'] = 'The minimum number of line that a section must have 
 $lang['Ads1'] = 'The code for the first Ad';
 $lang['Ads2'] = 'The code for the second Ad';
 $lang['Ads3'] = 'The code for the third Ad';
+$lang['Ads4'] = 'The code for the fourth Ad';
+$lang['Ads5'] = 'The code for the fifth Ad';
+$lang['Ads6'] = 'The code for the sixth Ad';
 
 ?>
