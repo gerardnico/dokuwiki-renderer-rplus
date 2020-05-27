@@ -157,7 +157,7 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
         if ($level == 1 and $nodePosition == 1) {
 
             global $ID;
-            $this->doc .= $this->youarehere($ID);
+            $this->doc .= $this->breadcrumb($ID);
 
         }
 
@@ -320,7 +320,7 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
 
 
     /**
-     * Hierarchical breadcrumbs
+     * Hierarchical breadcrumbs (you are here)
      *
      * This will return the Hierarchical breadcrumbs.
      *
@@ -328,13 +328,15 @@ class  renderer_plugin_rplus_renderer extends Doku_Renderer_xhtml
      *    - $conf['youarehere'] must be true
      *    - add $lang['youarehere'] if $printPrefix is true
      *
+     * Metadata comes from here
+     * https://developers.google.com/search/docs/data-types/breadcrumb
+     *
      * @return string
      */
-    function youarehere()
+    function breadcrumb()
     {
 
         global $conf;
-        global $lang;
 
         // check if enabled
         if (!$conf['youarehere']) return;
