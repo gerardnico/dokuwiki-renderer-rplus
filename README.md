@@ -1,5 +1,9 @@
 # Render Plus Plugin for DokuWiki
 
+
+> This repository is archived because the renderer has been integated into [ComboStrap](https://combostrap.com).
+
+## Old Description
 Dokuwiki Rendering plugins that:
 
    * places a TOC after the first H1 header
